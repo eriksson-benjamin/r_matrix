@@ -76,7 +76,7 @@ def lnlike(parameters):
     if log_level[0]:
         t_start = time.time()
 
-    cash = rmf.fit_function(parameters, exe, norm_tt, norm_p0, out_file,
+    cash = rmf.fit_function(parameters, exe, norm_p0, out_file,
                             temp_path, verbose)
 
     print(f'C_stat = {cash:.2f}')
@@ -137,13 +137,13 @@ def main(p0, nwalkers, niter, ndim, lnprob, data):
     return sampler, pos, prob, state
 
 
-def load_tt(norm):
+def load_tt():
     """Return TT spectrum from output_files."""
     tt = np.loadtxt('input_files/tt_spec.txt')
     tt_x = np.array(tt[:, 0]) * 1000
     tt_y = np.array(tt[:, 1])
 
-    return tt_x, tt_y * norm
+    return tt_x, tt_y
 
 
 if log_level[0]:
@@ -185,7 +185,7 @@ data = load(file_name, drf=drf, name='')
 tofor.fit.data = data
 tofor.fit.data_xlim = (20, 100)
 
-norm_tt = rmf.set_components(out_file)
+rmf.set_components(out_file)
 
 tofor.fit.data_xlim = (32.5, 80)
 

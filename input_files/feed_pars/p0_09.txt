@@ -1,13 +1,16 @@
 al_011	0
 al_012	0
-al_121	-2.7495
-al_122	-92.634
-al_111	1.686
-al_112	3.6
+al_121	-641.55
+al_122	-21614.6
+al_111	393.4
+al_112	840
 nn	0
 #
-# Multiply the factors above by 1/0.15 to get the original fit 9 values.
+# Divide the factors above by 35 to get the original fit 09 values. 
+# The factor 1/35 works to get a starting guess for the NBI data.
 #
+# Original fit 09
+# ---------------
 # al_011 0
 # al_012 0
 # al_121 -18.33

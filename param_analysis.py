@@ -242,6 +242,7 @@ def plot_tof(exe, feeds, tof_path, drf_path, rigid_shift):
     tof_sc = rms.calculate_tt_tof(drf, rigid_shift, scatter['x'], scatter['y'])
 
     norm = 56919.73549641055
+    norm = 1
     fig1 = plt.figure('Fig 1')
     ax1 = plt.gca()
 
@@ -356,6 +357,6 @@ if __name__ == '__main__':
     tof_path = 'data/nbi.txt'
     drf_path = '/home/beriksso/NES/drf/26-11-2022/tofu_drf_scaled_kin_ly.json'
     rigid_shift = -0.7
-    n = 5
+    n = 1
     exe = 'fortran/run_fortran'
     plot_tof(exe, params[-n:], tof_path, drf_path, rigid_shift)

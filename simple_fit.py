@@ -79,7 +79,7 @@ def main(start_params, temp_path, out_file, dat_file, verbose=False):
     tofor.fit.data_xlim = (20, 80)
 
     # Set fit components
-    norm_tt = rmf.set_components(out_file)
+    rmf.set_components(out_file)
 
     # Start feed parameter fitting procedure
     # --------------------------------------
@@ -99,7 +99,7 @@ def main(start_params, temp_path, out_file, dat_file, verbose=False):
     """
     exe = 'fortran/run_fortran'
     popt = sp.optimize.minimize(rmf.fit_function, p0, options={'eps': 0.025},
-                                args=(exe, norm_tt, norm_p0, out_file,
+                                args=(exe, norm_p0, out_file,
                                       temp_path, verbose))
 
     return popt

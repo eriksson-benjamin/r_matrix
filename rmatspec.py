@@ -210,7 +210,6 @@ def plot_tof(exe, feed, tof_path, drf_path, rigid_shift):
     tt_tot, tt_01, tt_02, tt_03, tt_nn = generate_components(exe, feed)
     bt_td = udfs.json_read_dictionary('input_files/specs/bt_td_spec.json')
     scatter = udfs.json_read_dictionary('input_files/specs/scatter_spec.json')
-    norm = 56919.73549641055
 
     # Translate to TOF
     drf = load_response_function(drf_path)
@@ -234,14 +233,14 @@ def plot_tof(exe, feed, tof_path, drf_path, rigid_shift):
                  color='k', marker='.', markersize=1)
 
     # Total fit
-    plt.plot(tof_x, tof_dt + tof_tot * norm + tof_sc, 'r-', label='total')
+    plt.plot(tof_x, tof_dt + tof_tot + tof_sc, 'r-', label='total')
 
     # DT
     plt.plot(tof_x, tof_dt, 'C0-', marker='None', label='DT',
              linestyle=udfs.get_linestyle('dashed'))
 
     # TT
-    plt.plot(tof_x, tof_tot * norm, linestyle='--', marker='None', color='C1',
+    plt.plot(tof_x, tof_tot, linestyle='--', marker='None', color='C1',
              label='TT total')
 
     # Scatter
@@ -258,36 +257,36 @@ def plot_tof(exe, feed, tof_path, drf_path, rigid_shift):
                  color='k', marker='.', markersize=1)
 
     # Total
-    plt.plot(tof_x, tof_dt + tof_tot * norm + tof_sc, 'r-', label='total')
+    plt.plot(tof_x, tof_dt + tof_tot + tof_sc, 'r-', label='total')
 
     # TT total
-    plt.plot(tof_x, tof_tot * norm, label='TT total', color='C1',
+    plt.plot(tof_x, tof_tot, label='TT total', color='C1',
              linestyle=udfs.get_linestyle('long dash with offset'))
 
     # 1/2̈́+
     if float(feed[0]) or float(feed[1]):
-        plt.plot(tof_x, tof_01 * norm, linewidth=1.5, color='c',
+        plt.plot(tof_x, tof_01, linewidth=1.5, color='c',
                  label=r'$1/2+ \ n \alpha$',
                  linestyle=udfs.get_linestyle('dotted'))
 
     # 1/2-
     if float(feed[2]) or float(feed[3]):
-        plt.plot(tof_x, tof_02 * norm, linewidth=1.5, color='r',
+        plt.plot(tof_x, tof_02, linewidth=1.5, color='r',
                  label=r'$1/2- \ n \alpha$',
                  linestyle=udfs.get_linestyle('densely dotted'))
 
     # 3/2-
     if float(feed[4]) or float(feed[5]):
-        plt.plot(tof_x, tof_03 * norm, label=r'$3/2- \ n \alpha$',
+        plt.plot(tof_x, tof_03, label=r'$3/2- \ n \alpha$',
                  linestyle=udfs.get_linestyle('dashed'), color='C0')
 
     # nn
     if float(feed[6]):
-        plt.plot(tof_x, tof_nn * norm, label=r'nn', color='g',
+        plt.plot(tof_x, tof_nn, label=r'nn', color='g',
                  linestyle=udfs.get_linestyle('dashdotted'))
 
     # interference
-    plt.plot(tof_x, tof_in * norm, label='interference', color='k',
+    plt.plot(tof_x, tof_in, label='interference', color='k',
              linestyle=udfs.get_linestyle('densely dashdotted'))
 
     plt.xlabel('$t_{TOF}$ (ns)')
@@ -297,10 +296,10 @@ def plot_tof(exe, feed, tof_path, drf_path, rigid_shift):
 
 
 if __name__ == '__main__':
-    feed = np.loadtxt('input_files/feed_pars/p0_16.txt', usecols=1)
+    feed = np.loadtxt('input_files/feed_pars/p0_09.txt', usecols=1)
     exe = 'fortran/run_fortran'
-
-    # Generat TT components
+    
+     # Generat TT components
     tt_comps = generate_components(exe, feed)
 
     # Plot

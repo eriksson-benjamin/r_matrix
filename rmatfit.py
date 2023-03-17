@@ -14,7 +14,7 @@ import os
 from nes import tofor
 
 
-def fit_function(feed, exe, norm_tt, norm_p0, out_file, temp_path, verbose):
+def fit_function(feed, exe, norm_p0, out_file, temp_path, verbose):
     """Return C-stat for TT spectrum and data for given feed parameters."""
     t_tot = time.time()
     # Generate TT spectrum
@@ -30,7 +30,7 @@ def fit_function(feed, exe, norm_tt, norm_p0, out_file, temp_path, verbose):
     tt_tof_yi = rms.calculate_tt_tof(tofor.fit.data.response,
                                      tofor.fit.rigid_shift.value, tt_x, tt_y)
 
-    tofor.fit.comp_data['TT total'] = tt_tof_yi * norm_tt
+    tofor.fit.comp_data['TT total'] = tt_tof_yi
     write_time('Set NES manually', time.time() - t0, out_file)
 
     t0 = time.time()
@@ -90,12 +90,12 @@ def set_components(out_file):
     tofor.scatter.use = True
 
     # Set TT component
-    tt_x, tt_y = load_tt(1, 'input_files/specs/tt_spec.txt')
-    norm_tt = get_normalization(
-        (tt_x, tt_y), (bt_td_comp.En, bt_td_comp.shape))
+    tt_x, tt_y = load_tt('input_files/specs/tt_spec.txt')
+#    norm_tt = get_normalization(
+#        (tt_x, tt_y), (bt_td_comp.En, bt_td_comp.shape))
     tt_comp = tofor.fix2
     tt_comp.En = tt_x
-    tt_comp.shape = tt_y * norm_tt
+    tt_comp.shape = tt_y
     tt_comp.N = bt_td_comp.N.value
     tt_comp.name = 'TT total'
     tt_comp.use = True
@@ -108,28 +108,15 @@ def set_components(out_file):
     t0 = time.time()
     tofor.fit()
     write_time('First fit:', time.time() - t0, out_file)
+    
 
-    return norm_tt
-
-
-def load_tt(norm, path):
+def load_tt(path):
     """Return TT spectrum from input_files."""
     tt = np.loadtxt(path)
     tt_x = np.array(tt[:, 0]) * 1000
     tt_y = np.array(tt[:, 1])
 
-    return tt_x, tt_y * norm
-
-
-def get_normalization(spec_1, spec_2):
-    """
-    Return normalization constant to normalize integral under spec_1 to 
-    integral under spec_2.
-    """
-    n1 = np.trapz(spec_1[1], x=spec_1[0])
-    n2 = np.trapz(spec_2[1], x=spec_2[0])
-
-    return n2 / n1
+    return tt_x, tt_y
 
 
 def cash(observed, expected):

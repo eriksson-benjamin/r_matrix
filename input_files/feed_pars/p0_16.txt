@@ -1,13 +1,16 @@
-al_011 -2.72
+al_011 -634.3546437
 al_012 0.0
-al_121 -2.72
-al_122 -45.96
-al_111 1.48
-al_112 23.23
-nn 1.87
+al_121 -635.8202242
+al_122 -10724.44655
+al_111 344.9654791
+al_112 5420.362343
+nn     436.3325418
 #
-# Multiply the factors above by 1/0.15 to get the original fit 16 values.
+# Divide the factors above by 35 to get the original fit 16 values. 
+# The factor 1/35 works to get a starting guess for the NBI data.
 #
+# Original fit 16
+# ---------------
 # al_011 -18.12441839
 # al_012 0.0
 # al_121 -18.16629212
