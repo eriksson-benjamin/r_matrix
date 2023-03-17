@@ -15,8 +15,6 @@ Created on Tue Nov 15 09:46:10 2022
 """
 
 
-
-
 import emcee
 import matplotlib.pyplot as plt
 import numpy as np
@@ -26,7 +24,6 @@ import time
 from datetime import datetime
 import nes
 from nes.tofor.commands import load_response_function
-from rmatspec import generate_tt_spec
 import sys
 import r_matrix_fit as rmf
 import os
@@ -43,6 +40,7 @@ if log_level[0]:
 
 
 def print_log(log_file, log_msg):
+    """Print log message."""
     now = datetime.now()
     dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
     with open(log_file, 'a') as handle:
@@ -77,14 +75,15 @@ def lnlike(parameters):
     """Return value of test statistic (C-stat)."""
     if log_level[0]:
         t_start = time.time()
-    
-    cash = rmf.fit_function(parameters, exe, norm_tt, norm_p0, out_file, 
+
+    cash = rmf.fit_function(parameters, exe, norm_tt, norm_p0, out_file,
                             temp_path, verbose)
-    
+
     print(f'C_stat = {cash:.2f}')
     if log_level[0]:
-        print_log(log_level[1], f'lnlike() finished in {time.time() - t_start} s.\n')
-    
+        msg = f'lnlike() finished in {time.time() - t_start} s.\n'
+        print_log(log_level[1], msg)
+
     # Maximize this value (therefore negative sign)
     return -cash
 
@@ -94,7 +93,7 @@ def lnprior(parameters):
     for i, param in enumerate(parameters):
         if param < 0.0 or param > 2.0:
             return -np.inf
-    
+
     return 0.0
 
 
@@ -102,13 +101,15 @@ def lnprob(parameters):
     """Return test statistic if parameters within bounds."""
     if log_level[0]:
         t_start = time.time()
-    
+
     lp = lnprior(parameters)
     if not np.isfinite(lp):
         return -np.inf
-    
+
     if log_level[0]:
-        print_log(log_level[1], f'lnprob() finished in {time.time() - t_start} s.')
+        msg = f'lnprob() finished in {time.time() - t_start} s.'
+        print_log(log_level[1], msg)
+
     # If lp is not -inf, its 0, so this just returns likelihood
     return lp + lnlike(parameters)
 
@@ -116,18 +117,18 @@ def lnprob(parameters):
 def main(p0, nwalkers, niter, ndim, lnprob, data):
     """Run MCMC sampler."""
     sampler = emcee.EnsembleSampler(nwalkers, ndim, lnprob)
-    
+
     print("Running burn-in...")
     if log_level[0]:
         print_log(log_level[1], 'Running burn-in.')
     p0, _, _ = sampler.run_mcmc(p0, 40, progress=True)
     sampler.reset()
-    
+
     # Move burn in output files
     files = os.listdir(temp_path)
     for file in files:
         shutil.move(f'{temp_path}/{file}', f'{burn_in}/{file}')
-    
+
     print("Running production...")
     if log_level[0]:
         print_log(log_level[1], 'Running production')
@@ -141,25 +142,12 @@ def load_tt(norm):
     tt = np.loadtxt('input_files/tt_spec.txt')
     tt_x = np.array(tt[:, 0]) * 1000
     tt_y = np.array(tt[:, 1])
-    
+
     return tt_x, tt_y * norm
-
-
-def get_normalization(spec_1, spec_2):
-    """
-    Return normalization constant to normalize integral under spec_1 to 
-    integral under spec_2.
-    """
-    n1 = np.trapz(spec_1[1], x=spec_1[0])
-    n2 = np.trapz(spec_2[1], x=spec_2[0])
-    
-    return n2/n1
-
 
 
 if log_level[0]:
     print_log(log_level[1], 'MCMC fitting procedure initiated.')
-
 
 # Paths etc.
 name = 'nbi'
@@ -209,24 +197,23 @@ dat = (data.axis, data.data, np.sqrt(data.data))
 
 # Set number of walkers and number of iterations
 n_walkers = 14
-#n_iter = 10000
-n_iter = 50
+n_iter = 10000
 
 # Normalized initial guess using p0 as normalization constants
 initial = np.ones(len(norm_p0))
 n_dim = len(initial)
-p0 = [np.array(initial) + 1E-7 * np.random.randn(n_dim) for i in range(n_walkers)]
+p0 = [np.array(initial)
+      + 1E-7 * np.random.randn(n_dim) for i in range(n_walkers)]
 sampler, pos, prob, state = main(p0, n_walkers, n_iter, n_dim, lnprob, dat)
 
 if log_level[0]:
-    print_log(log_level[1], 'MCMC fitting procedure finished. Saving to file...')
+    msg = 'MCMC fitting procedure finished. Saving to file...'
+    print_log(log_level[1], msg)
 
 # Save to file
 to_save = {'samples': sampler.flatchain,
            'test_stat': sampler.flatlnprobability,
            'p0': norm_p0,
            'feed': sampler.flatchain * norm_p0}
-udfs.json_write_dictionary(f'{temp_path}/mcmc_output.json', 
+udfs.json_write_dictionary(f'{temp_path}/mcmc_output.json',
                            udfs.listify(to_save))
-
-
