@@ -25,7 +25,7 @@ from datetime import datetime
 import nes
 from nes.tofor.commands import load_response_function
 import sys
-import r_matrix_fit as rmf
+import rmatfit as rmf
 import os
 import shutil
 
@@ -164,7 +164,7 @@ rmf.check_temp_files(temp_path)
 rmf.check_temp_files(burn_in)
 
 exe = 'fortran/run_fortran'
-verbose = False
+verbose = True
 
 # Parameter files
 param_file = 'p0_16'
