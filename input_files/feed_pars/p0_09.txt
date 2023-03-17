@@ -1,0 +1,17 @@
+al_011	0
+al_012	0
+al_121	-2.7495
+al_122	-92.634
+al_111	1.686
+al_112	3.6
+nn	0
+#
+# Multiply the factors above by 1/0.15 to get the original fit 9 values.
+#
+# al_011 0
+# al_012 0
+# al_121 -18.33
+# al_122 -617.56
+# al_111 11.24
+# al_112 24.0
+# nn 0
