@@ -89,10 +89,7 @@ def lnlike(parameters):
 
 
 def lnprior(parameters):
-    """Define priors."""
-    for i, param in enumerate(parameters):
-        if param < 0.0 or param > 2.0:
-            return -np.inf
+    """Define priors if required. None used currently."""
 
     return 0.0
 
