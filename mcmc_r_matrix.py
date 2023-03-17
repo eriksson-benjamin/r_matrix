@@ -89,7 +89,13 @@ def lnlike(parameters):
 
 
 def lnprior(parameters):
-    """Define priors if required. None used currently."""
+    """
+    Define priors if required. No priors used currently.
+    
+    Notes
+    -----
+    Return 0 if parameters within bounds, else return -infinity.
+    """
 
     return 0.0
 
