@@ -14,15 +14,24 @@ import useful_defs as udfs
 udfs.set_nes_plot_style()
 
 # Load MCMC samples from file
-file_name = 'output_files/mcmc/fit_16_mcmc.pickle'
-mcmc = udfs.unpickle(file_name)
-samples = mcmc['samples']
-test_stat = mcmc['test_stat']
+file_name = 'output_files/mcmc/nbi/mcmc_output.json'
+mcmc = udfs.numpify(udfs.json_read_dictionary(file_name))
+
+test_stat = -mcmc['test_stat']
+plt.figure('Test statistic')
+plt.plot(np.arange(0, len(test_stat)), test_stat)
+plt.xlabel('Iteration')
+plt.ylabel('C-stat')
+
+# Select samples from which test statistic has stabilized
+n_stable = 25000
+
+# Delete the secondary A1/2+ feed parameter (it is always zero)
+samples = np.delete(mcmc['feed'][n_stable:], 1, axis=1)
 n_pars = samples.shape[1]
 
 # Create corner plot
-labels = ['$A_{1/2^+}^{(0)}$', '$A_{1/2^+}^{(1)}$', 
-          '$A_{1/2^-}^{(0)}$', '$A_{1/2^-}^{(1)}$',
+labels = ['$A_{1/2^+}^{(0)}$', '$A_{1/2^-}^{(0)}$', '$A_{1/2^-}^{(1)}$',
           '$A_{3/2^-}^{(0)}$', '$A_{3/2^-}^{(1)}$', '$A_{nn}$']
 corner.corner(samples, show_titles=True, labels=labels, plot_datapoints=True,
               quantiles=[0.16, 0.5, 0.84], title_fmt='.4f')
@@ -31,16 +40,3 @@ corner.corner(samples, show_titles=True, labels=labels, plot_datapoints=True,
 quantiles = np.zeros([n_pars, 3])
 for i in range(n_pars):
     quantiles[i] = corner.quantile(samples[:, i], [0.16, 0.5, 0.84])
-
-
-# TODO: Calculate branching ratio and uncertainty MCMC output
-#
-# u_bt_tt = (quantiles[2][2] - quantiles[0]) / 2
-# u_gs_tt = (c_gs_tt[1] - c_gs_tt[0]) / 2
-#
-# br_gs = I_gs_tt / (I_bt_tt + I_gs_tt)
-#
-# # Propagate uncertainties
-# term_1 = I_bt_tt / (I_gs_tt + I_bt_tt)**2 * u_gs_tt
-# term_2 = I_gs_tt / (I_gs_tt + I_bt_tt)**2 * u_bt_tt
-# u_br_gs = np.sqrt(term_1**2 + term_2**2)
