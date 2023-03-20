@@ -6,5 +6,5 @@
 # @ notify_user = beriksso
 # @ notification = complete
 # @ queue
-cd /home/beriksso/TOFu/analysis/benjamin/other/ttnHe5_branching_ratio/tt_resonance/r_matrix
+cd /home/beriksso/TOFu/analysis/benjamin/other/tt_resonance/r_matrix
 python mcmc_r_matrix.py
