@@ -26,6 +26,21 @@ def generate_tt_spec(exe, args):
         String containing the path to the executable.
     args : list,
          List of strings containing feed factor parameter values.
+
+    Returns
+    -------
+    spec : ndarray,
+        Array with 6 columns. Contains the TT neutron energy spectrum with
+        all the feed factors set to the values given by 'args'. The first
+        column contains the energy axis, the second contains the total
+        spectrum, the third column contains the primary spectrum, the fourth
+        column contains the secondary spectrum, the fifth columns contains
+        the exchange spectrum, the sixth column contains the interference
+        spectrum.
+        
+    Notes
+    -----
+    See generate_components() for additional information.
     """
     if isinstance(args, np.ndarray):
         args = [str(a) for a in args]
