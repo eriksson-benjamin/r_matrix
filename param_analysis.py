@@ -84,8 +84,30 @@ def running_average(a, n):
     return average, std
 
 
-def plot_test_stat(C_stat, fig_name, n=1000, return_std=False):
-    """Plot the C_stat from the MCMC output."""
+def plot_test_stat(C_stat, fig_name, n=1000):
+    """
+    Plot the C_stat from the MCMC output.
+
+    Parameters
+    ----------
+    C_stat : array_like,
+        The C_stat from the MCMC output.
+    fig_name : str,
+        The name of the plot figure.
+    n : int, optional,
+        Number of elements (plus/minus) to include in the running average. 
+        Default is 1000.
+
+    Returns
+    -------
+    None
+
+    Notes
+    -----
+    The function plots the C_stat from the MCMC output and a running average 
+    with a window of length '2n+1'. Additionally, it computes and fills the 
+    area between the upper and lower bounds of the standard deviation.
+    """
     plt.figure(fig_name)
     plt.plot(np.arange(0, len(C_stat)), C_stat, zorder=1)
     rm, rs = running_average(C_stat, n)
@@ -100,7 +122,27 @@ def plot_test_stat(C_stat, fig_name, n=1000, return_std=False):
 
 
 def plot_feed_factors(feed_factors, n=1000):
-    """Plot the feed factors from the MCMC output."""
+    """
+    Plot the feed factors from the MCMC output.
+
+    Parameters
+    ----------
+    feed_factors : ndarray
+        A 2D array containing the feed factors from the MCMC output.
+    n : int, optional
+        Number of elements (plus/minus) to include in the running average.
+
+    Returns
+    -------
+    None
+
+    Notes
+    -----
+    The function plots the feed factors from the MCMC output by calculating the
+    running average and standard deviation of each feed factor using a window 
+    of size 2n+1. The output is a plot with two subplots, one for each feed 
+    factor.
+    """
     def plot_A(fig_name, a, b):
         # Calculate running average
         rm_a, rs_a = running_average(feed_factors[:, a], n)
@@ -154,7 +196,27 @@ def plot_feed_factors(feed_factors, n=1000):
 
 
 def plot_modifiers(modifiers, n=1000):
-    """Plot the modifiers from the MCMC output."""
+    """
+    Plot the modifiers from the MCMC output.
+
+    Parameters
+    ----------
+    modifiers : ndarray
+        A 2D array containing the modifiers from the MCMC output.
+    n : int, optional
+        Number of elements (plus/minus) to include in the running average.
+
+    Returns
+    -------
+    None
+
+    Notes
+    -----
+    The function plots the modifiers from the MCMC output by calculating the
+    running average and standard deviation of each modifier using a window of 
+    size 2n+1. The output is a plot with two subplots, one for each feed 
+    factor.
+    """
     def plot_A(fig_name, a, b):
         # Calculate running average
         rma, rsa = running_average(modifiers[:, a], n)
@@ -207,26 +269,33 @@ def plot_modifiers(modifiers, n=1000):
     plt.ylabel('Parameter value')
 
 
-def plot_selected_spectra(feed, exe):
-    """Plot the selected TT spectra."""
-    plt.figure('Selected TT energy spectra')
-    for i, f in enumerate(feed):
-        spec = rms.generate_tt_spec(exe, np.array(f, dtype='str').tolist())
-        if i == 0:
-            d0 = (spec[:, 0], spec[:, 1])
-            norm = 1
-        else:
-            d1 = (spec[:, 0], spec[:, 1])
-            norm = udfs.normalize(d1, d0)
-        plt.plot(spec[:, 0], norm * spec[:, 1], 'k-')
-    plt.xlabel('$E_n$ (keV)')
-    plt.ylabel('Intensity (a.u.)')
-
-    return spec
-
-
 def plot_tof(exe, feeds, tof_path, drf_path, rigid_shift):
-    """Plot TOF spectrum on data for given feed factors."""
+    """
+    Plot the TOF spectra for a given set of feed factors.
+
+    Parameters
+    ----------
+    exe : str,
+        Path to executable used to generate TT spectra.
+    feeds : ndarray,
+        2D array of feed factors where each row corresponds to one set of 
+        parameters.
+    tof_path : str,
+        Path to time-of-flight data.
+    drf_path : str,
+        Path to detector response function.
+    rigid_shift : float,
+        Shift in ns to apply to modelled TOF spectrum.
+
+    Returns
+    -------
+    None
+
+    Notes
+    -----
+    The function generates the TT time-of-flight spectrum for the given sets of
+    feed parameters and plots them on top of the experimental TOF data.
+    """
     # Read TOF data
     tof_x, tof_y, tof_bgr = np.loadtxt(tof_path, delimiter=',', unpack=True)
 
@@ -241,12 +310,10 @@ def plot_tof(exe, feeds, tof_path, drf_path, rigid_shift):
     tof_dt = rms.calculate_tt_tof(drf, rigid_shift, bt_td['x'], bt_td['y'])
     tof_sc = rms.calculate_tt_tof(drf, rigid_shift, scatter['x'], scatter['y'])
 
-    norm = 56919.73549641055
-    norm = 1
-    fig1 = plt.figure('Fig 1')
+    plt.figure('Fig 1')
     ax1 = plt.gca()
 
-    fig2 = plt.figure('Fig 2')
+    plt.figure('Fig 2')
     ax2 = plt.gca()
 
     # Data
@@ -279,41 +346,41 @@ def plot_tof(exe, feeds, tof_path, drf_path, rigid_shift):
         # Figure 1
         # --------
         # Total
-        ax1.plot(tof_x, tof_dt + tof_tot * norm + tof_sc, 'r-', label='total',
+        ax1.plot(tof_x, tof_dt + tof_tot + tof_sc, 'r-', label='total',
                  alpha=alpha)
 
         # TT total
-        ax1.plot(tof_x, tof_tot * norm, label='TT total', color='C1',
+        ax1.plot(tof_x, tof_tot , label='TT total', color='C1',
                  alpha=alpha)
 
         # 1/2-
-        ax1.plot(tof_x, tof_02 * norm, label=r'$1/2- \ n \alpha$', color='k',
+        ax1.plot(tof_x, tof_02, label=r'$1/2- \ n \alpha$', color='k',
                  alpha=alpha)
 
         # 3/2-
-        ax1.plot(tof_x, tof_03 * norm, label=r'$3/2- \ n \alpha$', color='b',
+        ax1.plot(tof_x, tof_03, label=r'$3/2- \ n \alpha$', color='b',
                  alpha=alpha)
 
         # nn
-        ax1.plot(tof_x, tof_nn * norm, label=r'nn', color='g',
+        ax1.plot(tof_x, tof_nn, label=r'nn', color='g',
                  alpha=alpha)
 
         # Figure 2
         # --------
         # Total
-        ax2.plot(tof_x, tof_dt + tof_tot * norm + tof_sc, 'r-', label='total',
+        ax2.plot(tof_x, tof_dt + tof_tot + tof_sc, 'r-', label='total',
                  alpha=alpha)
 
         # TT total
-        ax2.plot(tof_x, tof_tot * norm, label='TT total', color='C1',
+        ax2.plot(tof_x, tof_tot, label='TT total', color='C1',
                  alpha=alpha)
 
         # 1/2̈́+
-        ax2.plot(tof_x, tof_01 * norm, label=r'$1/2+ \ n \alpha$', color='c',
+        ax2.plot(tof_x, tof_01, label=r'$1/2+ \ n \alpha$', color='c',
                  alpha=alpha)
 
         # interference
-        ax2.plot(tof_x, tof_in * norm, label='interference', color='k',
+        ax2.plot(tof_x, tof_in, label='interference', color='k',
                  alpha=alpha)
 
     legend_el = [Line2D([0], [0], color='r', label='total'),
@@ -357,6 +424,6 @@ if __name__ == '__main__':
     tof_path = 'data/nbi.txt'
     drf_path = '/home/beriksso/NES/drf/26-11-2022/tofu_drf_scaled_kin_ly.json'
     rigid_shift = -0.7
-    n = 1
+    n = 100
     exe = 'fortran/run_fortran'
     plot_tof(exe, params[-n:], tof_path, drf_path, rigid_shift)
