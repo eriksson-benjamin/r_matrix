@@ -24,17 +24,22 @@ plt.xlabel('Iteration')
 plt.ylabel('C-stat')
 
 # Select samples from which test statistic has stabilized
-n_stable = 25000
+n_stable = 20000
+norm = 35
+
+# Select mask for C-stat
+c_max = 203
+mask = test_stat[n_stable:] < 203
 
 # Delete the secondary A1/2+ feed parameter (it is always zero)
-samples = np.delete(mcmc['feed'][n_stable:], 1, axis=1)
+samples = np.delete(mcmc['feed'][n_stable:], 1, axis=1) / norm
 n_pars = samples.shape[1]
 
 # Create corner plot
 labels = ['$A_{1/2^+}^{(0)}$', '$A_{1/2^-}^{(0)}$', '$A_{1/2^-}^{(1)}$',
           '$A_{3/2^-}^{(0)}$', '$A_{3/2^-}^{(1)}$', '$A_{nn}$']
-corner.corner(samples, show_titles=True, labels=labels, plot_datapoints=True,
-              quantiles=[0.16, 0.5, 0.84], title_fmt='.4f')
+corner.corner(samples[mask], show_titles=True, labels=labels, title_fmt='.4f',
+              plot_datapoints=True, quantiles=[0.16, 0.5, 0.84])
 
 # Return quantiles
 quantiles = np.zeros([n_pars, 3])
