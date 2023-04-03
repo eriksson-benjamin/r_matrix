@@ -29,6 +29,7 @@ import rmatfit as rmf
 import os
 import shutil
 
+
 # Global logging variable
 log_level = (1, 'log_mcmc.txt')
 if log_level[0]:
@@ -75,7 +76,7 @@ def lnlike(parameters):
     if log_level[0]:
         t_start = time.time()
 
-    cash = rmf.fit_function(parameters, exe, norm_p0, components, out_file,
+    cash = rmf.fit_function(parameters, exe, norm_p0, out_file,
                             temp_path, verbose)
 
     print(f'C_stat = {cash:.2f}')
@@ -138,13 +139,23 @@ def main(p0, nwalkers, niter, ndim, lnprob, data):
 
     return sampler, pos, prob, state
 
+
+def load_tt():
+    """Return TT spectrum from output_files."""
+    tt = np.loadtxt('input_files/tt_spec.txt')
+    tt_x = np.array(tt[:, 0]) * 1000
+    tt_y = np.array(tt[:, 1])
+
+    return tt_x, tt_y
+
+
 if log_level[0]:
     print_log(log_level[1], 'MCMC fitting procedure initiated.')
 
 # Paths etc.
 name = 'nbi'
 file_name = f'data/{name}.txt'
-out = 'mcmc_04'
+out = 'mcmc_05'
 out_file = f'{out}.txt'
 temp_path = f'/common/scratch/beriksso/TOFu/data/r_matrix/fit_files/{out}'
 burn_in = f'/common/scratch/beriksso/TOFu/data/r_matrix/fit_files/bi_{out}'
@@ -156,7 +167,7 @@ rmf.check_temp_files(temp_path)
 rmf.check_temp_files(burn_in)
 
 exe = 'fortran/run_fortran'
-verbose = False
+verbose = True
 
 # Parameter files
 param_file = 'p0_16'
@@ -165,6 +176,7 @@ start_params = f'input_files/feed_pars/{param_file}.txt'
 # Read start values for feed parameters
 feed = np.loadtxt(start_params, dtype='str')
 norm_p0 = np.array(feed[:, 1], dtype='float')
+
 
 # Decide which DRF to use (generated using light yield or not)
 light_yield = True
@@ -176,10 +188,9 @@ data = load(file_name, drf=drf, name='')
 tofor.fit.data = data
 tofor.fit.data_xlim = (20, 100)
 
-# Set components
-components = rmf.set_components('input_files/specs/bt_td_spec.json', 
-                                'input_files/specs/scatter_spec.json',
-                                'input_files/specs/model_inadequacy.txt', -0.7)
+rmf.set_components(out_file)
+
+tofor.fit.data_xlim = (32.5, 80)
 
 # Start feed parameter fitting procedure
 # --------------------------------------

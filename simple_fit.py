@@ -78,14 +78,12 @@ def main(start_params, temp_path, out_file, dat_file, verbose=False):
     tofor.fit.data = data
     tofor.fit.data_xlim = (20, 80)
 
-    # Set components
-    components = rmf.set_components('input_files/specs/bt_td_spec.json', 
-                                    'input_files/specs/scatter_spec.json',
-                                    'input_files/specs/model_inadequacy.txt',
-                                    -0.7)
-    
+    # Set fit components
+    rmf.set_components(out_file)
+
     # Start feed parameter fitting procedure
     # --------------------------------------
+    tofor.fit.data_xlim = (32.5, 80)
 
     # Read start values for feed parameters
     feed = np.loadtxt(start_params, dtype='str')
@@ -101,7 +99,7 @@ def main(start_params, temp_path, out_file, dat_file, verbose=False):
     """
     exe = 'fortran/run_fortran'
     popt = sp.optimize.minimize(rmf.fit_function, p0, options={'eps': 0.025},
-                                args=(exe, norm_p0, components, out_file,
+                                args=(exe, norm_p0, out_file,
                                       temp_path, verbose))
 
     return popt

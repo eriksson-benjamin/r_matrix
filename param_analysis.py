@@ -307,8 +307,8 @@ def plot_tof(exe, feeds, tof_path, drf_path, rigid_shift):
     drf = load_response_function(drf_path)
 
     # Translate to TOF
-    tof_dt = bt_td['tof']['y']
-    tof_sc = scatter['tof']['y']
+    tof_dt = rms.calculate_tt_tof(drf, rigid_shift, bt_td['x'], bt_td['y'])
+    tof_sc = rms.calculate_tt_tof(drf, rigid_shift, scatter['x'], scatter['y'])
 
     plt.figure('Fig 1')
     ax1 = plt.gca()
@@ -403,7 +403,7 @@ def plot_tof(exe, feeds, tof_path, drf_path, rigid_shift):
 
 if __name__ == '__main__':
     # Read MCMC file
-    path = 'output_files/mcmc/nbi/mcmc_output_n.json'
+    path = 'output_files/mcmc/nbi/mcmc_output.json'
     mcmc = udfs.numpify(udfs.json_read_dictionary(path))
     C_stat = -mcmc['test_stat']
 
@@ -424,6 +424,6 @@ if __name__ == '__main__':
     tof_path = 'data/nbi.txt'
     drf_path = '/home/beriksso/NES/drf/26-11-2022/tofu_drf_scaled_kin_ly.json'
     rigid_shift = -0.7
-    n = 1
+    n = 100
     exe = 'fortran/run_fortran'
     plot_tof(exe, params[-n:], tof_path, drf_path, rigid_shift)

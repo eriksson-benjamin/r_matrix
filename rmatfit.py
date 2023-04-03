@@ -12,13 +12,12 @@ import rmatspec as rms
 import numpy as np
 import os
 from nes import tofor
-import scipy as sp
 
 
-def fit_function(feed, exe, norm_p0, components, out_file, temp_path, verbose):
+def fit_function(feed, exe, norm_p0, out_file, temp_path, verbose):
     """Return C-stat for TT spectrum and data for given feed parameters."""
     t_tot = time.time()
-    # Generate TT energy spectrum
+    # Generate TT spectrum
     arguments = [str(f * n) for f, n in zip(feed, norm_p0)]
     t0 = time.time()
     tt_specs = rms.generate_tt_spec(exe, arguments)
@@ -27,71 +26,89 @@ def fit_function(feed, exe, norm_p0, components, out_file, temp_path, verbose):
     write_time('generate_tt_spec():', time.time() - t0, out_file)
 
     t0 = time.time()
-    # Translate to time-of-flight
+
     tt_tof_yi = rms.calculate_tt_tof(tofor.fit.data.response,
                                      tofor.fit.rigid_shift.value, tt_x, tt_y)
-    components['TT total'] = tt_tof_yi
+
+    tofor.fit.comp_data['TT total'] = tt_tof_yi
     write_time('Set NES manually', time.time() - t0, out_file)
 
-    # Fit model inadequacy to spectrum
-    popt = sp.optimize.minimize(model_inadequacy, x0=1, args=(components), 
-                                bounds=[(0, np.inf),])
-    components['model inadequacy'] = popt.x * components['model inadequacy']
-    # Write to file
-    with open(f'{temp_path}/model_inadequacy.txt', 'a') as handle:
-        handle.write(f'{popt.x[0]}\n')        
-    
     t0 = time.time()
-    # Calculate Cash-statistic
-    C_stat = return_fit_stat(components, 'cash')
+    C_stat = return_fit_stat('cash')
     write_time('fit_tofor():', time.time() - t0, out_file)
 
+    t0 = time.time()
     if verbose:
-        verbose_function(components, tt_x, tt_y, arguments, temp_path, 
-                         C_stat, feed, norm_p0)
+        chi2r = return_fit_stat('chi2r')
+        print(f'C = {C_stat}')
+        print(f'chi2r = {chi2r}')
+
+        to_save = {'bt_td': [tofor.fix1.En.tolist(),
+                             tofor.fix1.shape.tolist(),
+                             (tofor.fit.comp_data['D(T,n)He4']).tolist()],
+                   'tt': [tt_x.tolist(),
+                          tt_y.tolist(),
+                          (tofor.fit.comp_data['TT total']).tolist()],
+                   'scatter': [tofor.scatter.En.tolist(),
+                               tofor.scatter.shape.tolist(),
+                               (tofor.fit.comp_data['scatter']).tolist()],
+                   'feed': arguments,
+                   'C_stat': C_stat,
+                   'chi2r': chi2r,
+                   'modifiers': feed.tolist(),
+                   'p0': norm_p0.tolist()}
+        if temp_path == './':
+            f_name = 'output.json'
+        else:
+            files = os.listdir(temp_path)
+            f_name = f'{temp_path}/fit_{len(files) + 1}.json'
+        udfs.json_write_dictionary(f_name, to_save)
+    write_time('Saving json:', time.time() - t0, out_file)
 
     write_time('fit_function tot:', time.time() - t_tot, out_file)
     return C_stat
 
 
-def model_inadequacy(mi_I, components):
-    """Fit model inadequacy component to TOF spectrum."""
-    if 'model inadequacy' not in components.keys():
-        raise Exception('Model inadequacy component missing.')
-    
-    components_c = components.copy()
-    components_c['model inadequacy'] = mi_I * components_c['model inadequacy']
-    c_stat = return_fit_stat(components_c, 'cash')
-    
-    return c_stat
+def set_components(out_file):
+    """Set fit components."""
+    # Set BT TD component
+    bt_td = udfs.json_read_dictionary('input_files/specs/bt_td_spec.json')
+    bt_td_comp = tofor.fix1
+    bt_td_comp.En = np.array(bt_td['x'])  # keV
+    bt_td_comp.shape = np.array(bt_td['y'])
+    bt_td_comp.N = bt_td['N']
+    bt_td_comp.N.lock = False
+    bt_td_comp.name = 'D(T,n)He4'
+    bt_td_comp.use = True
 
+    # Set scatter component
+    scatter = udfs.json_read_dictionary('input_files/specs/scatter_spec.json')
+    tofor.scatter.En = np.array(scatter['x'])  # keV
+    tofor.scatter.shape = np.array(scatter['y'])
+    tofor.scatter.N = scatter['N']
+    tofor.scatter.N.lock = False
+    tofor.scatter.use = True
 
-def verbose_function(components, tt_x, tt_y, arguments, temp_path, 
-                     C_stat, feed, norm_p0):
-    chi2r = return_fit_stat(components, 'chi2r')
-    
-    print(f'C = {C_stat}')
-    print(f'chi2r = {chi2r}')
-    
-    
-    to_save = {'bt_td': components['D(T,n)He4'].tolist(),
-               'tt': [tt_x.tolist(),
-                      tt_y.tolist(),
-                      (components['TT total']).tolist()],
-               'scatter': components['scatter'].tolist(),
-               'model inadequacy': components['model inadequacy'].tolist(),
-               'feed': arguments,
-               'C_stat': C_stat,
-               'chi2r': chi2r,
-               'modifiers': feed.tolist(),
-               'p0': norm_p0.tolist()}
-    if temp_path == './':
-        f_name = 'output.json'
-    else:
-        files = os.listdir(temp_path)
-        f_name = f'{temp_path}/fit_{len(files) + 1}.json'
-    udfs.json_write_dictionary(f_name, to_save)
+    # Set TT component
+    tt_x, tt_y = load_tt('input_files/specs/tt_spec.txt')
+#    norm_tt = get_normalization(
+#        (tt_x, tt_y), (bt_td_comp.En, bt_td_comp.shape))
+    tt_comp = tofor.fix2
+    tt_comp.En = tt_x
+    tt_comp.shape = tt_y
+    tt_comp.N = bt_td_comp.N.value
+    tt_comp.name = 'TT total'
+    tt_comp.use = True
 
+    # Rigid shift
+    tofor.fit.rigid_shift = -0.7
+    tofor.fit.rigid_shift.lock = True
+    tofor.fit.plot_model = True
+
+    t0 = time.time()
+    tofor.fit()
+    write_time('First fit:', time.time() - t0, out_file)
+    
 
 def load_tt(path):
     """Return TT spectrum from input_files."""
@@ -100,29 +117,6 @@ def load_tt(path):
     tt_y = np.array(tt[:, 1])
 
     return tt_x, tt_y
-
-def set_components(dt_spec, scatter_spec, mi_spec, rigid_shift=-0.7):
-    """
-    Set fit components.
-    """
-    components = {}
-    
-    # Set BT TD component (time-of-flight)
-    bt_td = udfs.json_read_dictionary(dt_spec)
-    components['D(T,n)He4'] = np.array(bt_td['tof']['y'])
-
-    # Set scatter component (time-of-flight)
-    scatter = udfs.json_read_dictionary(scatter_spec)
-    components['scatter'] = np.array(scatter['tof']['y'])
-
-    # Set model inadequacy component (time-of-flight)
-    mi_x, mi_y = np.loadtxt(mi_spec, unpack=True)
-    components['model inadequacy'] = mi_y
-
-    # Rigid shift
-    tofor.fit.rigid_shift = rigid_shift
-
-    return components
 
 
 def cash(observed, expected):
@@ -143,15 +137,14 @@ def chi2r(observed, expected):
     return chi2r
 
 
-def return_fit_stat(components, fit_stat='cash'):
+def return_fit_stat(fit_stat='cash'):
     """Return fit statistic."""
-    #Sum TOF components
-    tot = np.zeros(len(tofor.fit.data.data))
-    for val in components.values():
-        tot += val
-    
-    # Add background component from data
-    tot += tofor.fit.data.back
+    # TOF components
+    dt_tof = tofor.fit.comp_data['D(T,n)He4']
+    tt_tof = tofor.fit.comp_data['TT total']
+    scatter_tof = tofor.fit.comp_data['scatter']
+
+    tot = dt_tof + tt_tof + scatter_tof + tofor.fit.data.back
 
     # Mask for given fit range
     mask = ((tofor.fit.data.axis >= tofor.fit.data_xlim[0])
