@@ -234,8 +234,8 @@ def plot_tof(exe, feed, tof_path, drf_path, rigid_shift):
     tof_03 = calculate_tt_tof(drf, rigid_shift, tt_03[:, 0], tt_03[:, 1])
     tof_nn = calculate_tt_tof(drf, rigid_shift, tt_nn[:, 0], tt_nn[:, 1])
     tof_in = calculate_tt_tof(drf, rigid_shift, tt_tot[:, 0], tt_tot[:, -1])
-    tof_dt = calculate_tt_tof(drf, rigid_shift, bt_td['x'], bt_td['y'])
-    tof_sc = calculate_tt_tof(drf, rigid_shift, scatter['x'], scatter['y'])
+    tof_dt = bt_td['tof']['y']
+    tof_sc = scatter['tof']['y']
 
     # Read TOF data
     tof_x, tof_y, tof_bgr = np.loadtxt(tof_path, delimiter=',', unpack=True)
@@ -311,10 +311,10 @@ def plot_tof(exe, feed, tof_path, drf_path, rigid_shift):
 
 
 if __name__ == '__main__':
-    feed = np.loadtxt('input_files/feed_pars/p0_09.txt', usecols=1)
+    feed = np.loadtxt('input_files/feed_pars/p0_16.txt', usecols=1)
     exe = 'fortran/run_fortran'
     
-     # Generat TT components
+     # Generate TT components
     tt_comps = generate_components(exe, feed)
 
     # Plot
