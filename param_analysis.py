@@ -269,7 +269,7 @@ def plot_modifiers(modifiers, n=1000):
     plt.ylabel('Parameter value')
 
 
-def plot_tof(exe, feeds, tof_path, drf_path, rigid_shift):
+def plot_tof(exe, feeds, tof_path, drf_path, rigid_shift, save_specs=False):
     """
     Plot the TOF spectra for a given set of feed factors.
 
@@ -323,6 +323,11 @@ def plot_tof(exe, feeds, tof_path, drf_path, rigid_shift):
     ax2.errorbar(tof_x, tof_y - tof_bgr, yerr=np.sqrt(tof_y), linestyle='None',
                  color='k', marker='.', markersize=1)
     alpha = 0.4
+    info = ('"E/tof specs" contains neutron spectra produced using the '
+            'feeding parameters in "feed params". The order is total, 1/2+, '
+            '1/2-, 3/2-, nn, interference. x_E is in MeV. x_tof is in ns.')
+    specs = {'feed params': [], 'x_E': [], 'E specs': [],
+             'tof specs': [], 'x_tof': [], 'info': info}
     for i, feed in enumerate(feeds):
         print(f'{i+1}/{len(feeds)}')
         f = [str(p) for p in feed]
@@ -383,6 +388,16 @@ def plot_tof(exe, feeds, tof_path, drf_path, rigid_shift):
         ax2.plot(tof_x, tof_in, label='interference', color='k',
                  alpha=alpha)
 
+        if save_specs:
+            tof_specs = [tof_tot.tolist(), tof_01.tolist(), tof_02.tolist(), 
+                         tof_03.tolist(), tof_nn.tolist(), tof_in.tolist()]
+            E_specs = [tt_tot[:, 1].tolist(), tt_01[:, 1].tolist(), 
+                       tt_02[:, 1].tolist(), tt_03[:, 1].tolist(), 
+                       tt_nn[:, 1].tolist()]
+            specs['tof specs'].append(tof_specs)
+            specs['E specs'].append(E_specs)
+            specs['feed params'].append(feed.tolist())
+    
     legend_el = [Line2D([0], [0], color='r', label='total'),
                  Line2D([0], [0], color='C1', label='TT total'),
                  Line2D([0], [0], color='k', label=r'$1/2^- \ n \alpha$'),
@@ -400,6 +415,12 @@ def plot_tof(exe, feeds, tof_path, drf_path, rigid_shift):
     ax2.set_xlabel('$t_{TOF}$ (ns)')
     ax2.set_ylabel('counts')
 
+    if save_specs:
+        specs['x_tof'] = tof_x.tolist()
+        specs['x_E'] = tt_tot[:, 0].tolist()
+        udfs.json_write_dictionary('specs.json', udfs.listify(specs))
+        
+        
 
 if __name__ == '__main__':
     # Read MCMC file
@@ -410,20 +431,20 @@ if __name__ == '__main__':
     params = mcmc['feed']
     modifiers = mcmc['samples']
     C_stat = C_stat
-
-    # Plot C-stat
-    plot_test_stat(C_stat, 'C-stats', n=100)
-
-    # Plot feed factors
-    plot_feed_factors(params, n=100)
-
-    # Plot modifiers
-    plot_modifiers(modifiers, n=100)
+#
+#    # Plot C-stat
+#    plot_test_stat(C_stat, 'C-stats', n=100)
+#
+#    # Plot feed factors
+#    plot_feed_factors(params, n=100)
+#
+#    # Plot modifiers
+#    plot_modifiers(modifiers, n=100)
 
     # Plot TOF for given feed factors
     tof_path = 'data/nbi.txt'
     drf_path = '/home/beriksso/NES/drf/26-11-2022/tofu_drf_scaled_kin_ly.json'
     rigid_shift = -0.7
-    n = 2
+    n = 50
     exe = 'fortran/run_fortran'
-    plot_tof(exe, params[-n:], tof_path, drf_path, rigid_shift)
+    plot_tof(exe, params[-n:], tof_path, drf_path, rigid_shift, True)
