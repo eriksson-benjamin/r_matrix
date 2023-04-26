@@ -11,6 +11,7 @@ udfs.set_nes_plot_style()
 import numpy as np
 import matplotlib.pyplot as plt
 import sys
+sys.path.insert(0, '../')
 import rmatspec as rms
 from nes.tofor.commands import load_response_function
 from matplotlib.lines import Line2D
@@ -300,8 +301,8 @@ def plot_tof(exe, feeds, tof_path, drf_path, rigid_shift, save_specs=False):
     tof_x, tof_y, tof_bgr = np.loadtxt(tof_path, delimiter=',', unpack=True)
 
     # Read DT and scatter
-    bt_td = udfs.json_read_dictionary('input_files/specs/bt_td_spec.json')
-    scatter = udfs.json_read_dictionary('input_files/specs/scatter_spec.json')
+    bt_td = udfs.json_read_dictionary('../input_files/specs/bt_td_spec.json')
+    scatter = udfs.json_read_dictionary('../input_files/specs/scatter_spec.json')
 
     # Read response function
     drf = load_response_function(drf_path)
@@ -424,27 +425,27 @@ def plot_tof(exe, feeds, tof_path, drf_path, rigid_shift, save_specs=False):
 
 if __name__ == '__main__':
     # Read MCMC file
-    path = 'output_files/mcmc/nbi/mcmc_output.json'
+    path = '../output_files/mcmc/nbi/mcmc_output.json'
     mcmc = udfs.numpify(udfs.json_read_dictionary(path))
     C_stat = -mcmc['test_stat']
 
     params = mcmc['feed']
     modifiers = mcmc['samples']
     C_stat = C_stat
-#
-#    # Plot C-stat
-#    plot_test_stat(C_stat, 'C-stats', n=100)
-#
-#    # Plot feed factors
-#    plot_feed_factors(params, n=100)
-#
-#    # Plot modifiers
-#    plot_modifiers(modifiers, n=100)
+
+    # Plot C-stat
+    plot_test_stat(C_stat, 'C-stats', n=100)
+
+    # Plot feed factors
+    plot_feed_factors(params, n=100)
+
+    # Plot modifiers
+    plot_modifiers(modifiers, n=100)
 
     # Plot TOF for given feed factors
-    tof_path = 'data/nbi.txt'
+    tof_path = '../data/nbi.txt'
     drf_path = '/home/beriksso/NES/drf/26-11-2022/tofu_drf_scaled_kin_ly.json'
     rigid_shift = -0.7
-    n = 50
-    exe = 'fortran/run_fortran'
+    n = 2
+    exe = '../fortran/run_fortran'
     plot_tof(exe, params[-n:], tof_path, drf_path, rigid_shift, True)
