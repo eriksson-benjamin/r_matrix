@@ -301,8 +301,8 @@ def plot_tof(exe, feeds, tof_path, drf_path, rigid_shift, save_specs=False):
     tof_x, tof_y, tof_bgr = np.loadtxt(tof_path, delimiter=',', unpack=True)
 
     # Read DT and scatter
-    bt_td = udfs.json_read_dictionary('../input_files/specs/bt_td_spec.json')
-    scatter = udfs.json_read_dictionary('../input_files/specs/scatter_spec.json')
+    bt_td = udfs.json_read_dictionary(f'../input_files/specs/{name}/bt_td_spec.json')
+    scatter = udfs.json_read_dictionary(f'../input_files/specs/{name}/scatter_spec.json')
 
     # Read response function
     drf = load_response_function(drf_path)
@@ -424,8 +424,9 @@ def plot_tof(exe, feeds, tof_path, drf_path, rigid_shift, save_specs=False):
         
 
 if __name__ == '__main__':
+    name = 'group_1'
     # Read MCMC file
-    path = '../output_files/mcmc/nbi/mcmc_output.json'
+    path = f'../output_files/mcmc/{name}/mcmc_output.json'
     mcmc = udfs.numpify(udfs.json_read_dictionary(path))
     C_stat = -mcmc['test_stat']
 
@@ -443,9 +444,9 @@ if __name__ == '__main__':
     plot_modifiers(modifiers, n=100)
 
     # Plot TOF for given feed factors
-    tof_path = '../data/nbi.txt'
+    tof_path = f'../data/{name}.txt'
     drf_path = '/home/beriksso/NES/drf/26-11-2022/tofu_drf_scaled_kin_ly.json'
     rigid_shift = -0.7
-    n = 2
+    n = 50
     exe = '../fortran/run_fortran'
     plot_tof(exe, params[-n:], tof_path, drf_path, rigid_shift, True)
