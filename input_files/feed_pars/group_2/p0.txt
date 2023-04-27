@@ -1,0 +1,20 @@
+al_011	-598.1058069
+al_012	0
+al_121	-599.48764
+al_122	-10111.62103
+al_111	325.2531661
+al_112	5110.627352
+nn	411.3992537
+#
+# Divide the factors above by 33 to get the original fit 16 values. 
+# The factor 1/33 works to get a starting guess for the group_2 data.
+#
+# Original fit 16
+# ---------------
+# al_011 -18.12441839
+# al_012 0.0
+# al_121 -18.16629212
+# al_122 -306.4127586
+# al_111 9.856156547
+# al_112 154.8674955
+# nn 12.46664405

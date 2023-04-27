@@ -61,7 +61,7 @@ def plot_tof_spec(pars=(1, 1, 1)):
 
 
 
-def main(start_params, temp_path, out_file, dat_file, verbose=False):
+def main(start_params, temp_path, specs, out_file, dat_file, verbose=False):
     rmf.check_temp_files(temp_path)
     now = datetime.datetime.now()
     print(now)
@@ -79,10 +79,7 @@ def main(start_params, temp_path, out_file, dat_file, verbose=False):
     tofor.fit.data_xlim = (20, 80)
 
     # Set fit components
-        # Set components
-    components = rmf.set_components('input_files/specs/bt_td_spec.json', 
-                                    'input_files/specs/scatter_spec.json', 
-                                    -0.7)
+    components = rmf.set_components(specs[0], specs[1], -0.7)
 
     # Start feed parameter fitting procedure
     # --------------------------------------
@@ -110,9 +107,12 @@ def main(start_params, temp_path, out_file, dat_file, verbose=False):
 
 if __name__ == '__main__':
     out = 'temp_01'
+    name = 'group_2'
     start_params = 'input_files/feed_pars/p0_16.txt'
     temp_path = f'/common/scratch/beriksso/TOFu/data/r_matrix/fit_files/{out}'
     out_file = f'{out}.txt'
-    dat_file = 'data/nbi.txt'
+    dat_file = f'data/{name}.txt'
+    specs = [f'input_files/specs/{name}/bt_td_spec.json', 
+             f'input_files/specs/{name}/scatter_spec.json']
     verbose = True
-    popt = main(start_params, temp_path, out_file, dat_file, verbose)
+    popt = main(start_params, temp_path, specs, out_file, dat_file, verbose)

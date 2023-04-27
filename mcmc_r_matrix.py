@@ -144,9 +144,9 @@ if log_level[0]:
     print_log(log_level[1], 'MCMC fitting procedure initiated.')
 
 # Paths etc.
-name = 'nbi'
+name = 'group_2'
 file_name = f'data/{name}.txt'
-out = 'mcmc_04'
+out = 'mcmc_07'
 out_file = f'{out}.txt'
 temp_path = f'/common/scratch/beriksso/TOFu/data/r_matrix/fit_files/{out}'
 burn_in = f'/common/scratch/beriksso/TOFu/data/r_matrix/fit_files/bi_{out}'
@@ -161,8 +161,7 @@ exe = 'fortran/run_fortran'
 verbose = False
 
 # Parameter files
-param_file = 'p0_16'
-start_params = f'input_files/feed_pars/{param_file}.txt'
+start_params = f'input_files/feed_pars/{name}/p0.txt'
 
 # Read start values for feed parameters
 feed = np.loadtxt(start_params, dtype='str')
@@ -179,8 +178,9 @@ data = load(file_name, drf=drf, name='')
 tofor.fit.data = data
 tofor.fit.data_xlim = (20, 100)
 
-components = rmf.set_components('input_files/specs/bt_td_spec.json', 
-                                'input_files/specs/scatter_spec.json',  -0.7)
+components = rmf.set_components(f'input_files/specs/{name}/bt_td_spec.json',
+                                f'input_files/specs/{name}/scatter_spec.json',
+                                -0.7)
 
 tofor.fit.data_xlim = (32.5, 80)
 
