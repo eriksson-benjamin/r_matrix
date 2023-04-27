@@ -7,7 +7,7 @@ Created on Fri Mar 31 10:54:48 2023
 """
 
 import sys
-sys.path.insert(0, '../r_matrix')
+sys.path.insert(0, '../')
 import rmatspec as rms
 import numpy as np
 import matplotlib.pyplot as plt
@@ -55,14 +55,14 @@ def plot_components(tt_tot, tt_01, tt_02, tt_03, tt_nn):
     return ax_1, ax_2
 
 
-def plot_tof(exe, feed, tof_path, drf_path, rigid_shift):
+def plot_tof(exe, feed, tof_path, drf_path, name, rigid_shift):
     """Plot TOF spectrum on data for given feed factors."""
     factor = 1.05
     # Create TT energy spectrum
     tt_09 = rms.generate_tt_spec(exe, feed[0])
     tt_16 = rms.generate_tt_spec(exe, feed[1])
-    bt_td = udfs.json_read_dictionary('input_files/specs/bt_td_spec.json')
-    scatter = udfs.json_read_dictionary('input_files/specs/scatter_spec.json')
+    bt_td = udfs.json_read_dictionary(f'../input_files/specs/{name}/bt_td_spec.json')
+    scatter = udfs.json_read_dictionary(f'../input_files/specs/{name}/scatter_spec.json')
 
     # Translate to TOF
     drf = rms.load_response_function(drf_path)
@@ -137,14 +137,14 @@ def plot_tof(exe, feed, tof_path, drf_path, rigid_shift):
     
 
 
-def plot_subplots(exe, feed, tof_path, drf_path, rigid_shift):
+def plot_subplots(exe, feed, tof_path, drf_path, name, rigid_shift):
     """Plot TOF spectrum on data for given feed factors."""
     factor = 1.05
     # Create TT energy spectrum
     tt_09 = rms.generate_tt_spec(exe, feed[0])
     tt_16 = rms.generate_tt_spec(exe, feed[1])
-    bt_td = udfs.json_read_dictionary('input_files/specs/bt_td_spec.json')
-    scatter = udfs.json_read_dictionary('input_files/specs/scatter_spec.json')
+    bt_td = udfs.json_read_dictionary(f'../input_files/specs/{name}/bt_td_spec.json')
+    scatter = udfs.json_read_dictionary(f'../input_files/specs/{name}/scatter_spec.json')
 
     # Translate to TOF
     drf = rms.load_response_function(drf_path)
@@ -228,11 +228,11 @@ def plot_subplots(exe, feed, tof_path, drf_path, rigid_shift):
     return ax
 
 
-def plot_tofu(tof_path):
+def plot_tofu(tof_path, name):
     """Plot TOF spectrum on data for given feed factors."""
     # Read DT + scatter    
-    bt_td = udfs.json_read_dictionary('input_files/specs/bt_td_spec.json')
-    scatter = udfs.json_read_dictionary('input_files/specs/scatter_spec.json')
+    bt_td = udfs.json_read_dictionary(f'../input_files/specs/{name}/bt_td_spec.json')
+    scatter = udfs.json_read_dictionary(f'../input_files/specs/{name}/scatter_spec.json')
     tof_dt = bt_td['tof']['y']
     tof_sc = scatter['tof']['y']
 
@@ -280,11 +280,11 @@ def plot_tofu(tof_path):
 
 if __name__ == '__main__':
     # Read input feed factors
-    p09 = np.loadtxt('../r_matrix/input_files/feed_pars/p0_09.txt', usecols=1)
-    p16 = np.loadtxt('../r_matrix/input_files/feed_pars/p0_16.txt', usecols=1)
+    p09 = np.loadtxt('input_files/feed_pars/p0_09.txt', usecols=1)
+    p16 = np.loadtxt('input_files/feed_pars/p0_16.txt', usecols=1)
     
     # Generate components
-    exe = '../r_matrix/fortran/run_fortran'
+    exe = '../fortran/run_fortran'
     
     feed = np.copy(p16) / 1E2
     tt_tot, tt_01, tt_02, tt_03, tt_nn = rms.generate_components(exe, feed)
@@ -293,10 +293,11 @@ if __name__ == '__main__':
     ax1, ax2 = plot_components(tt_tot, tt_01, tt_02, tt_03, tt_nn)
     
     # Plot TOF for given feed factors
-    tof_path = '../r_matrix/data/nbi.txt'
+    name = 'nbi'
+    tof_path = f'../data/{name}.txt'
     drf_path = '/home/beriksso/NES/drf/26-11-2022/tofu_drf_scaled_kin_ly.json'
     rigid_shift = -0.7
-    plot_tof(exe, (p09, p16), tof_path, drf_path, rigid_shift)
+    plot_tof(exe, (p09, p16), tof_path, drf_path, name, rigid_shift)
 
-    plot_tofu(tof_path)
-    plot_subplots(exe, (p09, p16), tof_path, drf_path, rigid_shift)
+    plot_tofu(tof_path, name)
+    plot_subplots(exe, (p09, p16), tof_path, drf_path, name, rigid_shift)
