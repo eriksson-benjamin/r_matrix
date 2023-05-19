@@ -1,0 +1,20 @@
+al_011    -651.0
+al_012    0.0
+al_121    -637.0
+al_122    -10220.0
+al_111    309.75
+al_112    8400.0
+nn        514.5
+#
+# Divide the factors above by 35 to get the original fit values. 
+# The factor 1/35 works to get a starting guess for the NBI data.
+#
+# Original fit for NIF 77963
+# --------------------------
+# al_011	-18.60
+# al_012	0.00
+# al_121	-18.20
+# al_122	-292
+# al_111	8.85
+# al_112	240
+# nn		14.7

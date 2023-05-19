@@ -1,0 +1,20 @@
+al_011    -969.5
+al_012    0.0
+al_121    -612.5
+al_122    -4480.0
+al_111    317.8
+al_112    8470.0
+nn        528.5
+#
+# Divide the factors above by 35 to get the original fit values. 
+# The factor 1/35 works to get a starting guess for the NBI data.
+#
+# Original fit for NIF 77960
+# --------------------------
+# al_011	-27.7
+# al_012	0
+# al_121	-17.5
+# al_122	-128
+# al_111	9.08
+# al_112	242
+# nn 		15.1
