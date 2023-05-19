@@ -39,10 +39,23 @@ n_pars = samples.shape[1]
 # Create corner plot
 labels = ['$A_{1/2^+}^{(0)}$', '$A_{1/2^-}^{(0)}$', '$A_{1/2^-}^{(1)}$',
           '$A_{3/2^-}^{(0)}$', '$A_{3/2^-}^{(1)}$', '$A_{nn}$']
-corner.corner(samples[mask], show_titles=True, labels=labels, title_fmt='.4f',
-              plot_datapoints=True, quantiles=[0.16, 0.5, 0.84])
+fig = corner.corner(samples[mask], show_titles=True, labels=labels,
+                    title_fmt='.4f', plot_datapoints=True,
+                    quantiles=[0.16, 0.5, 0.84])
 
 # Return quantiles
 quantiles = np.zeros([n_pars, 3])
 for i in range(n_pars):
     quantiles[i] = corner.quantile(samples[:, i], [0.16, 0.5, 0.84])
+
+
+# Overlay the NIF results
+p16 = np.loadtxt('input_files/feed_pars/p0_16keV.txt', usecols=1) / 35
+p36 = np.loadtxt('input_files/feed_pars/p0_36keV.txt', usecols=1) / 35
+p50 = np.loadtxt('input_files/feed_pars/p0_50keV.txt', usecols=1) / 35
+
+corner.overplot_lines(fig, np.delete(p16, 1), color='C0', linestyle='-.')
+corner.overplot_lines(fig, np.delete(p36, 1), color='C1', linestyle='dotted')
+corner.overplot_lines(fig, np.delete(p50, 1), color='C2', linestyle='--')
+
+# TODO: Use overplot_points instead of (together with?) overplot_lines.
