@@ -23,16 +23,33 @@ import sys
 import scipy.constants as cst
 
 
-def read_xsec(energy_axis, COFM=False):
-    """Read T(T,2n)He4 cross section data."""
+def read_xsec(energy_axis, COFM=True):
+    """
+    Read T(T,2n)He4 cross section data.
+
+    Parameters
+    ----------
+    energy_axis : array_like,
+        The energy axis in keV.
+    COFM : bool, optional,
+        Whether or not to convert to the center-of-mass frame. Default is True.
+
+    Returns
+    -------
+    xs : array_like,
+        The cross section data in m^2.
+    """
     filename = f'input_files/cross_sections/T(T,2n)He4.txt'
+    
+    # E is in eV, xs is in barn
     E, xs, _ = np.genfromtxt(filename, comments='#', unpack=True)
     if COFM:
         m1 = cst.physical_constants['triton mass in u'][0]
         m2 = cst.physical_constants['triton mass in u'][0]
         E *= m1 / (m1 + m2)
 
-    xs = np.interp(energy_axis, E*1E-3, xs*1E-28) # E_CM in keV, xs in m^2
+    # E_CM is in keV, xs is translated to m^2
+    xs = np.interp(energy_axis, E*1E-3, xs*1E-28)
     return xs
 
 
@@ -180,7 +197,7 @@ def main(shot, t0, t1, bin_edges):
     Ecm = calculate_Ecm(E_th, E_nb)
     
     # Read cross section for TT reaction
-    xs = read_xsec(bin_centres)
+    xs = read_xsec(bin_centres, True)
     
     # Calculate the cross section adjusted CM energy distribution
     hcm, _ = np.histogram(Ecm, bins=bin_edges)
@@ -204,6 +221,7 @@ if __name__ == '__main__':
     
     results = {'shots': [], 'E lab dist': [], 'E CM dist': [], 'mean': [], 
                'failed':[], 'bin_centres': bin_centres.tolist()}
+    counter = 1
     for shot, t0, t1 in zip(shots, t0s, t1s):
         try:
             mean, std_l, std_u, h_th, h_nb, hcm, hcm_xs = main(shot, t0, t1, 
@@ -212,10 +230,12 @@ if __name__ == '__main__':
             results['mean'].append([mean, std_l, std_u])
             results['E lab dist'].append([h_th.tolist(), h_nb.tolist()])
             results['E CM dist'].append([hcm.tolist(), hcm_xs.tolist()])
-            udfs.json_write_dictionary('cm_energies.json', results, check=False)
+            
         except:
             print(f'{shot} failed.')
             results['failed'].append(int(shot))        
-
-    
+        udfs.json_write_dictionary('cm_energies.json', results, check=False)
+        print(f'{counter}/{len(shots)} done.')
+        counter += 1
+        sys.exit()
     
