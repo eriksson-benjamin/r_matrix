@@ -15,7 +15,7 @@ udfs.set_nes_plot_style()
 
 # Load MCMC samples from file
 name = 'nbi'
-file_name = f'../output_files/mcmc/{name}/mcmc_output_45keV.json'
+file_name = f'../output_files/mcmc/{name}/mcmc_output.json'
 mcmc = udfs.numpify(udfs.json_read_dictionary(file_name))
 
 test_stat = -mcmc['test_stat']
