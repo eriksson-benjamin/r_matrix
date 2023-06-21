@@ -6,6 +6,10 @@ Created on Fri Mar 31 10:54:48 2023
 @author: beriksso
 """
 
+"""
+Plot figures for the EPS conference 2023.
+"""
+
 import sys
 sys.path.insert(0, '../')
 import rmatspec as rms
@@ -14,6 +18,7 @@ import matplotlib.pyplot as plt
 import useful_defs as udfs
 udfs.set_nes_plot_style()
 from matplotlib.patches import FancyArrowPatch
+
 
 def plot_components(tt_tot, tt_01, tt_02, tt_03, tt_nn):
     """Plot the TT spectrum components for given feed factors."""
@@ -294,7 +299,7 @@ if __name__ == '__main__':
     
     # Plot TOF for given feed factors
     name = 'nbi'
-    tof_path = f'../data/{name}.txt'
+    tof_path = f'../data/{name}/{name}.txt'
     drf_path = '/home/beriksso/NES/drf/26-11-2022/tofu_drf_scaled_kin_ly.json'
     rigid_shift = -0.7
     plot_tof(exe, (p09, p16), tof_path, drf_path, name, rigid_shift)
