@@ -137,7 +137,7 @@ verbose = True  # Set to True to write fit files
 
 # Paths etc.
 name = 'nbi'
-file_name = f'data/{name}.txt'
+file_name = f'data/{name}/{name}.txt'
 out = 'mcmc_06'
 out_file = f'{out}.txt'
 temp_path = f'/common/scratch/beriksso/TOFu/data/r_matrix/fit_files/{out}'

@@ -111,7 +111,7 @@ if __name__ == '__main__':
     start_params = f'input_files/feed_pars/{name}/p0.txt'
     temp_path = f'/common/scratch/beriksso/TOFu/data/r_matrix/fit_files/{out}'
     out_file = f'{out}.txt'
-    dat_file = f'data/{name}.txt'
+    dat_file = f'data/{name}/{name}.txt'
     specs = [f'input_files/specs/{name}/bt_td_spec.json', 
              f'input_files/specs/{name}/scatter_spec.json']
     verbose = True
