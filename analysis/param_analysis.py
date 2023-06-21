@@ -270,7 +270,7 @@ def plot_modifiers(modifiers, n=1000):
     plt.ylabel('Parameter value')
 
 
-def plot_tof(exe, feeds, tof_path, drf_path, rigid_shift, save_specs=False):
+def plot_tof(exe, feeds, tof_path, drf_path, name, rigid_shift, save_specs=False):
     """
     Plot the TOF spectra for a given set of feed factors.
 
@@ -394,7 +394,7 @@ def plot_tof(exe, feeds, tof_path, drf_path, rigid_shift, save_specs=False):
                          tof_03.tolist(), tof_nn.tolist(), tof_in.tolist()]
             E_specs = [tt_tot[:, 1].tolist(), tt_01[:, 1].tolist(), 
                        tt_02[:, 1].tolist(), tt_03[:, 1].tolist(), 
-                       tt_nn[:, 1].tolist()]
+                       tt_nn[:, 1].tolist(), tt_tot[:, -1].tolist()]
             specs['tof specs'].append(tof_specs)
             specs['E specs'].append(E_specs)
             specs['feed params'].append(feed.tolist())
@@ -419,34 +419,215 @@ def plot_tof(exe, feeds, tof_path, drf_path, rigid_shift, save_specs=False):
     if save_specs:
         specs['x_tof'] = tof_x.tolist()
         specs['x_E'] = tt_tot[:, 0].tolist()
-        udfs.json_write_dictionary('specs.json', udfs.listify(specs))
+        udfs.json_write_dictionary(f'{name}_specs.json', udfs.listify(specs))
         
         
+def plot_E_tof(name, n_specs, tof_path, spec_path):
+    """Plot energy and TOF spectra from file. Same as plot_tof() but faster."""
+    # Read TOF data
+    tof_x, tof_y, tof_bgr = np.loadtxt(tof_path, delimiter=',', unpack=True)
+
+    # Read DT and scatter
+    bt_td = udfs.json_read_dictionary(f'../input_files/specs/{name}/bt_td_spec.json')
+    scatter = udfs.json_read_dictionary(f'../input_files/specs/{name}/scatter_spec.json')
+    tof_dt = np.array(bt_td['tof']['y'])
+    tof_sc = np.array(scatter['tof']['y'])
+
+    # Read specs
+    specs = udfs.numpify(udfs.json_read_dictionary(spec_path))
+    erg_specs = specs['E specs']
+    tof_specs = specs['tof specs']
+    
+    # Create mask for selecting spectra
+    mask = np.random.choice(np.arange(0, len(erg_specs)), n_specs, 
+                            replace=False)
+    
+    # Select spectra
+    erg_tot, erg_01, erg_02, erg_03, erg_nn, erg_in = np.transpose(erg_specs[mask], 
+                                                           (1, 0, 2))
+    tof_tot, tof_01, tof_02, tof_03, tof_nn, tof_in = np.transpose(tof_specs[mask], 
+                                                           (1, 0, 2))
+    """
+    Plot TOF spectra
+    """
+    # Create figures
+    plt.figure('TOF fig 1')
+    ax1 = plt.gca()
+
+    plt.figure('TOF fig 2')
+    ax2 = plt.gca()
+
+    # Data
+    ax1.errorbar(tof_x, tof_y - tof_bgr, yerr=np.sqrt(tof_y), linestyle='None',
+                 color='k', marker='.', markersize=1)
+
+    ax2.errorbar(tof_x, tof_y - tof_bgr, yerr=np.sqrt(tof_y), linestyle='None',
+                 color='k', marker='.', markersize=1)
+    alpha = 1
+    
+
+    # Figure 1
+    # --------
+    # Total
+    ax1.plot(tof_x, (tof_dt + tof_tot + tof_sc).T, 'r-', label='total',
+             alpha=alpha)
+
+    # TT total
+    ax1.plot(tof_x, tof_tot.T, label='TT total', color='C1',
+             alpha=alpha)
+
+    # 1/2-
+    ax1.plot(tof_x, tof_02.T, label=r'$1/2- \ n \alpha$', color='k',
+             alpha=alpha)
+
+    # 3/2-
+    ax1.plot(tof_x, tof_03.T, label=r'$3/2- \ n \alpha$', color='b',
+             alpha=alpha)
+
+    # nn
+    ax1.plot(tof_x, tof_nn.T, label=r'nn', color='g',
+             alpha=alpha)
+
+    # Figure 2
+    # --------
+    # Total
+    ax2.plot(tof_x, (tof_dt + tof_tot + tof_sc).T, 'r-', label='total',
+             alpha=alpha)
+
+    # TT total
+    ax2.plot(tof_x, tof_tot.T, label='TT total', color='C1',
+             alpha=alpha)
+
+    # 1/2̈́+
+    ax2.plot(tof_x, tof_01.T, label=r'$1/2+ \ n \alpha$', color='c',
+             alpha=alpha)
+
+    # interference
+    ax2.plot(tof_x, tof_in.T, label='interference', color='k',
+             alpha=alpha)
+
+    legend_el = [Line2D([0], [0], color='r', label='total'),
+                 Line2D([0], [0], color='C1', label='TT total'),
+                 Line2D([0], [0], color='k', label=r'$1/2^- \ n \alpha$'),
+                 Line2D([0], [0], color='b', label=r'$3/2^- \ n \alpha$'),
+                 Line2D([0], [0], color='g', label='nn')]
+    ax1.legend(handles=legend_el)
+    ax1.set_xlabel('$t_{TOF}$ (ns)')
+    ax1.set_ylabel('counts')
+
+    legend_el = [Line2D([0], [0], color='r', label='total'),
+                 Line2D([0], [0], color='C1', label='TT total'),
+                 Line2D([0], [0], color='c', label=r'$1/2^+ \ n \alpha$'),
+                 Line2D([0], [0], color='k', label='interference')]
+    ax2.legend(handles=legend_el)
+    ax2.set_xlabel('$t_{TOF}$ (ns)')
+    ax2.set_ylabel('counts')
+
+    ax1.set_xlim(30, 100)
+    ax2.set_xlim(30, 100)
+    ax1.set_ylim(0, 5000)
+    ax2.set_ylim(-2000, 5000)
+
+    """
+    Plot energy spectra
+    """
+    # Create figures
+    plt.figure('Energy fig 1')
+    ax1 = plt.gca()
+
+    plt.figure('Energy fig 2')
+    ax2 = plt.gca()
+    
+    erg_x = specs['x_E']
+    
+    # Figure 1
+    # --------
+    # Total
+    ax1.plot(erg_x, erg_tot.T, 'C1-', label='total',
+             alpha=alpha)
+
+    # 1/2-
+    ax1.plot(erg_x, erg_02.T, label=r'$1/2- \ n \alpha$', color='k',
+             alpha=alpha)
+
+    # 3/2-
+    ax1.plot(erg_x, erg_03.T, label=r'$3/2- \ n \alpha$', color='b',
+             alpha=alpha)
+
+    # nn
+    ax1.plot(erg_x, erg_nn.T, label=r'nn', color='g',
+             alpha=alpha)
+
+    # Figure 2
+    # --------
+    # Total
+    
+    # TT total
+    ax2.plot(erg_x, erg_tot.T, label='TT total', color='C1',
+             alpha=alpha)
+
+    # 1/2̈́+
+    ax2.plot(erg_x, erg_01.T, label=r'$1/2+ \ n \alpha$', color='c',
+             alpha=alpha)
+
+    # interference
+    ax2.plot(erg_x, erg_in.T, label='interference', color='k',
+             alpha=alpha)
+
+    legend_el = [Line2D([0], [0], color='C1', label='TT total'),
+                 Line2D([0], [0], color='k', label=r'$1/2^- \ n \alpha$'),
+                 Line2D([0], [0], color='b', label=r'$3/2^- \ n \alpha$'),
+                 Line2D([0], [0], color='g', label='nn')]
+    ax1.legend(handles=legend_el)
+    ax1.set_xlabel('Neutron energy (keV)')
+    ax1.set_ylabel('counts')
+
+    legend_el = [Line2D([0], [0], color='C1', label='TT total'),
+                 Line2D([0], [0], color='c', label=r'$1/2^+ \ n \alpha$'),
+                 Line2D([0], [0], color='k', label='interference')]
+    ax2.legend(handles=legend_el)
+    ax2.set_xlabel('Neutron energy (keV)')
+    ax2.set_ylabel('counts')
+
 
 if __name__ == '__main__':
-    name = 'group_1'
+    # Data set
+    name = 'nbi'
+
     # Read MCMC file
     path = f'../output_files/mcmc/{name}/mcmc_output.json'
     mcmc = udfs.numpify(udfs.json_read_dictionary(path))
     C_stat = -mcmc['test_stat']
 
-    params = mcmc['feed']
-    modifiers = mcmc['samples']
-    C_stat = C_stat
+    # Apply mask
+    mask = C_stat < 190
+
+    params = mcmc['feed'][mask]
+    modifiers = mcmc['samples'][mask]
+    C_stat = C_stat[mask]
 
     # Plot C-stat
-    plot_test_stat(C_stat, 'C-stats', n=100)
+    plot_test_stat(C_stat, 'C-stats', n=300)
 
     # Plot feed factors
-    plot_feed_factors(params, n=100)
+    plot_feed_factors(params, n=300)
 
     # Plot modifiers
-    plot_modifiers(modifiers, n=100)
-
-    # Plot TOF for given feed factors
-    tof_path = f'../data/{name}.txt'
+    plot_modifiers(modifiers, n=300)
+    
+    # Plot TOF/E specs from files
+    tof_path = f'../data/{name}/{name}.txt'
     drf_path = '/home/beriksso/NES/drf/26-11-2022/tofu_drf_scaled_kin_ly.json'
+
+    spec_path = f'output_files/specs/{name}/specs.json'
+    plot_E_tof(name, 50, tof_path, spec_path)
+    
+    # Plot TOF for given feed factors
     rigid_shift = -0.7
-    n = 50
+    n = 100
     exe = '../fortran/run_fortran'
-    plot_tof(exe, params[-n:], tof_path, drf_path, rigid_shift, True)
+    
+
+    plot_tof(exe, params[-n:], tof_path, drf_path, name, 
+             rigid_shift, save_specs=True)
+    
