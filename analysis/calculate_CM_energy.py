@@ -6,8 +6,9 @@ Created on Mon Apr 24 08:22:01 2023
 @author: beriksso
 
 Calculate the ion energy distributions (thermal T and NBI slowing down in 
-thermal T) for all discharges and given time slices. Calculate the CM energy of
-the T+T system. Plot and save results to json file.
+thermal T) for all discharges and given time slices. Calculate the effective CM
+energy distribution of the T+T reactions adjusted by sigma*v. Plot and save 
+results to json file.
 """
 
 
@@ -84,8 +85,8 @@ def plot_temperatures(shots, t0, t1):
 def _calculate_Ecm(E_th, E_nb):
     """Calculate CM energy (keV) for reaction TH and NB populations."""
     # Masses (eV)
-    m1 = cst.physical_constants['triton mass energy equivalent in MeV'][0] * 1E6
-    m2 = cst.physical_constants['triton mass energy equivalent in MeV'][0] * 1E6
+    m1 = cst.physical_constants['triton mass energy equivalent in MeV'][0]*1E6
+    m2 = cst.physical_constants['triton mass energy equivalent in MeV'][0]*1E6
     
     # Particle kinetic energies (eV)
     E1 = 1E3 * E_th
@@ -253,6 +254,7 @@ if __name__ == '__main__':
     bin_edges = np.arange(0, 150, 0.5)
     bin_centres = udfs.get_bin_centres(bin_edges)
     
+    # Dictionary to store results in
     results = {'shots': [], 'E lab dist': [], 'E CM dist': [], 'mean': [], 
                'failed':[], 'bin_centres': bin_centres.tolist()}
     counter = 1
@@ -268,6 +270,9 @@ if __name__ == '__main__':
         except:
             print(f'{shot} failed.')
             results['failed'].append(int(shot))        
-        udfs.json_write_dictionary('cm_energies.json', results, check=False)
+        
+        # Write results to file
+        udfs.json_write_dictionary('energy_distributions.json', results, 
+                                   check=False)
         print(f'{counter}/{len(shots)} done.')
         counter += 1
