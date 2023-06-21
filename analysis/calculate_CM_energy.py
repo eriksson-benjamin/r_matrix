@@ -81,7 +81,7 @@ def plot_temperatures(shots, t0, t1):
     udfs.multifig('temperatures', combine_pdf=True)
     
    
-def calculate_Ecm(E_th, E_nb):
+def _calculate_Ecm(E_th, E_nb):
     """Calculate CM energy (keV) for reaction TH and NB populations."""
     # Masses (eV)
     m1 = cst.physical_constants['triton mass energy equivalent in MeV'][0] * 1E6
@@ -104,8 +104,30 @@ def calculate_Ecm(E_th, E_nb):
     
     return Ecm
 
+
+def calculate_Ecm(th, nb):
+    """
+    Calculate CM energy (keV) and relative velocities (m/s) for reactions 
+    between thermal and beam populations.
+    """
+    # Get the sampled four-vectors
+    P_tot = th.P + nb.P
+    
+    # Invariant mass
+    M = np.sqrt(P_tot[0]**2 - np.sum(P_tot[1:]**2, axis=0))
+    
+    # CM energies
+    Ecm = M - (th.m + nb.m)
+    
+    # Relative velocities
+    v_rel = th.v - nb.v
+    V = np.sqrt(np.sum(v_rel**2, axis=0))
+    
+    return Ecm, V
+
+
 def fuel_ion_dists(shot, t0, t1):
-    """Return fuel ion energy distributions."""
+    """Return reactant objects for thermal and beam T ion distributions."""
     # Compute T NBI slowing down in thermal T plasma
     ne, Te, B, R0 = jetplasma.get_params(shot, t0, t1)
     E, D = jetnbi.get_dist(shot, t0, t1, ion='T')
@@ -119,11 +141,11 @@ def fuel_ion_dists(shot, t0, t1):
     tt_scalc.reactant_b.sample_E_dist(E, D, pitch_range=[0.5, 0.7])  # b = triton
     tt_scalc.reactant_a.sample_maxwellian_dist(Te)  # a = triton
     
-    # Get samples
-    E_th = tt_scalc.reactant_a.E
-    E_nb = tt_scalc.reactant_b.E
+    # Return reactant objects
+    th = tt_scalc.reactant_a
+    nb = tt_scalc.reactant_b
     
-    return E_th, E_nb
+    return th, nb
 
 
 def plot_Elab(bin_edges, E_th, E_nb):
@@ -156,7 +178,7 @@ def plot_ECM(bin_centres, Ecm_h, Ecm_xs, xs):
     plt.ylabel('Rel. intensity (a.u.)')
     ax1 = plt.gca()
     ax1.legend(loc='upper left')
-    ax1.set_ylim(0, 20000)
+    ax1.set_ylim(0, 3E10)
     ax1.set_xlim(0, 150)
 
     # Calculate 1 sigma intervals
@@ -181,27 +203,38 @@ def plot_ECM(bin_centres, Ecm_h, Ecm_xs, xs):
     ax2.tick_params('y', colors='r')
     ax2.legend(loc='upper right')
     ax2.set_xlim(0, 150)
-    ax2.set_ylim(0, 0.03)
+    ax2.set_ylim(0, 0.06)
     
     return mean, std_l, std_u
 
 
 def main(shot, t0, t1, bin_edges):
     # Get fuel ion energy distributions
-    E_th, E_nb = fuel_ion_dists(shot, t0, t1)
+    th, nb = fuel_ion_dists(shot, t0, t1)
+
+    # Plot distributions
+    bin_centres, h_th, h_nb = plot_Elab(bin_edges, th.E, nb.E)
     
-    # Plot distirbutions
-    bin_centres, h_th, h_nb = plot_Elab(bin_edges, E_th, E_nb)
-    
-    # Calculate CM energy of samples
-    Ecm = calculate_Ecm(E_th, E_nb)
+    # Calculate CM energy of the samples
+    Ecm, V = calculate_Ecm(th, nb)
     
     # Read cross section for TT reaction
     xs = read_xsec(bin_centres, True)
     
-    # Calculate the cross section adjusted CM energy distribution
-    hcm, _ = np.histogram(Ecm, bins=bin_edges)
+    # Calculate the cross section (sigma*v) adjusted CM energy distribution
+    hcm, _ = np.histogram(Ecm, bins=bin_edges, weights=V)
     hcm_xs = hcm * xs
+    
+    plt.figure()
+    weights1 = read_xsec(Ecm, True) * V
+    hhcm, _ = np.histogram(Ecm, bins=bin_edges, weights=weights1)
+    plt.plot(bin_centres, hcm_xs/hcm_xs.max(), linewidth=4, label='hcm')
+    plt.plot(bin_centres, hhcm/hhcm.max(), linestyle='-', label='hhcm')
+    plt.legend()
+    
+    plt.figure()
+    we, _ = np.histogram(weights1)
+    plt.plot()
     
     # Plot CM distributions
     mean, std_l, std_u = plot_ECM(bin_centres, hcm, hcm_xs, xs)
@@ -211,7 +244,8 @@ def main(shot, t0, t1, bin_edges):
 
 if __name__ == '__main__':  
     # Load shot numbers
-    discharges = np.loadtxt('../../survey/shot_lists/r99/nbi_shot_list.txt')
+    name = 'nbi'
+    discharges = np.loadtxt(f'../data/{name}/shots_{name}.txt')
     shots = np.array(discharges[:, 0], dtype='int')
     t0s, t1s = discharges[:, 1], discharges[:, 2]
     
@@ -237,5 +271,3 @@ if __name__ == '__main__':
         udfs.json_write_dictionary('cm_energies.json', results, check=False)
         print(f'{counter}/{len(shots)} done.')
         counter += 1
-        sys.exit()
-    
