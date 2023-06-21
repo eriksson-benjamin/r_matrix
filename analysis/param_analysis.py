@@ -287,6 +287,8 @@ def plot_tof(exe, feeds, tof_path, drf_path, name, rigid_shift, save_specs=False
         Path to detector response function.
     rigid_shift : float,
         Shift in ns to apply to modelled TOF spectrum.
+    save_specs : boolean,
+        Energy and TOF spectra are written to file if set to True.
 
     Returns
     -------
