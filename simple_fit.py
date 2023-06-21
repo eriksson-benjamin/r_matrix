@@ -107,8 +107,8 @@ def main(start_params, temp_path, specs, out_file, dat_file, verbose=False):
 
 if __name__ == '__main__':
     out = 'temp_01'
-    name = 'group_2'
-    start_params = 'input_files/feed_pars/p0_16.txt'
+    name = 'nbi'
+    start_params = f'input_files/feed_pars/{name}/p0.txt'
     temp_path = f'/common/scratch/beriksso/TOFu/data/r_matrix/fit_files/{out}'
     out_file = f'{out}.txt'
     dat_file = f'data/{name}.txt'

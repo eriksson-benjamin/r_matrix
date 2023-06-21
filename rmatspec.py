@@ -311,12 +311,12 @@ def plot_tof(exe, feed, tof_path, drf_path, rigid_shift):
 
 
 if __name__ == '__main__':
-    feed = np.loadtxt('input_files/feed_pars/p0_16.txt', usecols=1)
+    feed = np.loadtxt('input_files/feed_pars/nbi/p0.txt', usecols=1)
     exe = 'fortran/run_fortran'
     
      # Generate TT components
     tt_comps = generate_components(exe, feed)
-
+    
     # Plot
     plot_components(*tt_comps)
 
