@@ -6,15 +6,6 @@ Created on Thu Feb 16 10:22:16 2023
 @author: beriksso
 """
 
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Tue Nov 15 09:46:10 2022
-
-@author: beriksso
-"""
-
-
 import emcee
 import matplotlib.pyplot as plt
 import numpy as np
@@ -139,26 +130,27 @@ def main(p0, nwalkers, niter, ndim, lnprob, data):
 
     return sampler, pos, prob, state
 
-
 if log_level[0]:
     print_log(log_level[1], 'MCMC fitting procedure initiated.')
 
+verbose = True  # Set to True to write fit files
+
 # Paths etc.
-name = 'group_2'
+name = 'nbi'
 file_name = f'data/{name}.txt'
-out = 'mcmc_07'
+out = 'mcmc_06'
 out_file = f'{out}.txt'
 temp_path = f'/common/scratch/beriksso/TOFu/data/r_matrix/fit_files/{out}'
 burn_in = f'/common/scratch/beriksso/TOFu/data/r_matrix/fit_files/bi_{out}'
 if not os.path.exists(burn_in):
     raise Exception('Burn in directory missing.')
 
+# Path to executable where TT spectra are generated
+exe = 'fortran/run_fortran'
+
 # Remove old files
 rmf.check_temp_files(temp_path)
 rmf.check_temp_files(burn_in)
-
-exe = 'fortran/run_fortran'
-verbose = False
 
 # Parameter files
 start_params = f'input_files/feed_pars/{name}/p0.txt'
@@ -166,7 +158,6 @@ start_params = f'input_files/feed_pars/{name}/p0.txt'
 # Read start values for feed parameters
 feed = np.loadtxt(start_params, dtype='str')
 norm_p0 = np.array(feed[:, 1], dtype='float')
-
 
 # Decide which DRF to use (generated using light yield or not)
 light_yield = True
@@ -197,8 +188,7 @@ n_iter = 10000
 # Normalized initial guess using p0 as normalization constants
 initial = np.ones(len(norm_p0))
 n_dim = len(initial)
-p0 = [np.array(initial)
-      + 1E-7 * np.random.randn(n_dim) for i in range(n_walkers)]
+p0 = [np.array(initial) + 1E-7*np.random.randn(n_dim) for i in range(n_walkers)]
 sampler, pos, prob, state = main(p0, n_walkers, n_iter, n_dim, lnprob, dat)
 
 if log_level[0]:
