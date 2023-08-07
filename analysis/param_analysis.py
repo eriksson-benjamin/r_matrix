@@ -622,14 +622,22 @@ if __name__ == '__main__':
     drf_path = '/home/beriksso/NES/drf/26-11-2022/tofu_drf_scaled_kin_ly.json'
 
     spec_path = f'output_files/specs/{name}/specs.json'
-    plot_E_tof(name, 50, tof_path, spec_path)
-    
+    plot_E_tof(name, 100, tof_path, spec_path)
+
     # Plot TOF for given feed factors
     rigid_shift = -0.7
     n = 100
     exe = '../fortran/run_fortran'
     
-
-    plot_tof(exe, params[-n:], tof_path, drf_path, name, 
+    # Set the seed
+    seed_value = 42
+    np.random.seed(seed_value)
+    
+    # Randomly select parameters
+    args = np.arange(0, len(params))[20000:]
+    random_args = np.random.choice(args, n, replace=False)
+    
+    # Plot for given parameters
+    plot_tof(exe, params[random_args], tof_path, drf_path, name, 
              rigid_shift, save_specs=True)
     
