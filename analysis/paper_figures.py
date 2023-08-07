@@ -58,7 +58,8 @@ def plot_tof(name, n_specs, tof_path, specs):
     
 
     # DT
-    ax1.plot(tof_x, tof_dt, color='b', linestyle=udfs.get_linestyle('long dash with offset'), label='DT')
+    ax1.plot(tof_x, tof_dt, color='b', label='DT',
+             linestyle=udfs.get_linestyle('long dash with offset'))
     
     # Scatter
     ax1.plot(tof_x, tof_sc, 'k-.', label='scatter')
@@ -220,7 +221,8 @@ def plot_stats(C_stat, feed_factors, n=1000):
         ax1.fill_between(x_rma, y1=rm_a + rs_a, y2=rm_a - rs_a,
                          color='xkcd:peach', zorder=2)
 
-        ax2.plot(x_axis, feed_factors[:, b] / 35, color='C0', alpha=alpha, zorder=1)
+        ax2.plot(x_axis, feed_factors[:, b] / 35, color='C0', 
+                 alpha=alpha, zorder=1)
         ax2.plot(x_rmb, rm_b, label=labels[b], color='C1', zorder=3)
         ax2.fill_between(x_rmb, y1=rm_b + rs_b, y2=rm_b - rs_b,
                          color='xkcd:peach', zorder=2)
@@ -349,7 +351,6 @@ def plot_all_ECM(j, weighted_av):
     plt.xlim(0, 125)
     plt.legend()
     
-
 
 def plot_E_tof(name, n_specs, tof_path):
     """Plot energy and TOF spectra from file. Same as plot_tof() but faster."""
