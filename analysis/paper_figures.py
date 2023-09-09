@@ -81,7 +81,7 @@ def plot_tof(name, n_specs, tof_path, specs):
                         linestyle='--')]
     ax1.legend(handles=legend_el)
     ax1.set_xlabel('$t_{TOF}$ (ns)')
-    ax1.set_ylabel('counts')
+    ax1.set_ylabel('counts/bin')
 
 
     ax1.set_xlim(10, 120)
@@ -341,8 +341,8 @@ def plot_all_ECM(j, weighted_av):
     
     norm = 0.6 / weighted_av.max()
     plt.plot(bin_centres, hcm_xs.T * norm, 'k', alpha=0.3)
-    plt.plot(bin_centres, weighted_av * norm , 'C1', label='weighted average', 
-             linewidth=1.5)
+    plt.plot(bin_centres, weighted_av * norm , 'C1', linewidth=1.5,
+             label='weighted average distribution')
     plt.axvline(mu, linestyle='--', color='C1', linewidth=1.5)
     
     plt.xlabel('Adjusted $E_{CM}$ (keV)')
@@ -413,7 +413,7 @@ def plot_E_tof(name, n_specs, tof_path):
                  Line2D([0], [0], color='k', label='scatter', linestyle='-.')]
     ax1.legend(handles=legend_el)
     ax1.set_xlabel('$t_{TOF}$ (ns)')
-    ax1.set_ylabel('counts')
+    ax1.set_ylabel('counts/bin')
 
 
     ax1.set_xlim(30, 100)
@@ -483,3 +483,27 @@ if __name__ == '__main__':
     
     # Plot all sigma*v adjusted distributions
     plot_all_ECM(j, weighted_av)
+
+    # Plot TOFOR response function projeections
+    ergs = np.arange(1.5, 11.5, 1.5)  # MeV
+    drf = '/home/beriksso/NES/drf/26-11-2022/tofu_drf_scaled_kin_ly.json'
+    plt.figure('Projections')
+    ax = plt.gca()
+    norm = 430000
+    for erg in ergs:
+        x, y = udfs.plot_drf_tof_projection((erg - 0.1, erg + 0.1), 
+                                            drf, plot=False)
+        
+        ax.plot(x, y / norm, 'k')
+        
+        x_max = x[np.argmax(y)]
+        y_max = y.max()
+        print(y_max)
+        ax.text(x_max, y_max / norm, f'{erg:.1f} MeV', fontsize=9,
+                 horizontalalignment='right')
+
+    ax.set_xlim(20, 100)
+    ax.set_ylim(0, 1)
+    ax.set_xlabel('$t_{TOF}$ (ns)')
+    ax.set_ylabel('TOFOR response (a.u.)')
+
