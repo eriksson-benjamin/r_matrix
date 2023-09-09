@@ -26,6 +26,8 @@ if __name__ == '__main__':
     current = np.array([])        
     B_field = np.array([])
     nbi_pow = np.array([])
+    e_temp = np.array([])
+    e_density = np.array([])
     counter = 0
     for shot, t0, t1 in zip(shots, t0s, t1s):
         # Import plasma current (MA)
@@ -39,6 +41,14 @@ if __name__ == '__main__':
         # Import NBI power (MW)
         P, time = udfs.get_NBI_power(shot, (t0, t1))
         nbi_pow = np.append(nbi_pow, P.mean() / 1E6)
+    
+        # Import the electron temperature (keV)
+        Te = udfs.get_Te(shot, (t0, t1), diag='HRTX')
+        e_temp = np.append(e_temp, np.mean(Te['HRTX'][1]))
+    
+        # Import the electron density (1/m^3)
+        ne = udfs.get_ne(shot, (t0, t1), diag='HRTX')
+        e_density = np.append(e_density, np.mean(ne['HRTX'][1]))
     
         print(f'{counter + 1}/{len(shots)} done.')
         counter += 1
@@ -68,3 +78,18 @@ if __name__ == '__main__':
     plt.hist(nbi_pow, weights=weights, color='g', label='weighted')
     plt.xlabel('$P_{NBI}$ (MW)')
     plt.legend()
+
+    # Electron density
+    plt.figure('Electron density')
+    plt.hist(e_density, label='non-weighted')
+    plt.hist(e_density, weights=weights, color='g', label='weighted')
+    plt.xlabel('$n_{e}$ (m$^{-3}$)')
+    plt.legend()
+
+    # Electron temperature
+    plt.figure('Electron temperature')
+    plt.hist(e_temp, label='non-weighted')
+    plt.hist(e_temp, weights=weights, color='g', label='weighted')
+    plt.xlabel('$T_{e}$ (keV)')
+    plt.legend()
+
