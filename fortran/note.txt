@@ -1,0 +1,2 @@
+Contact Carl Brune (Ohio university) for access to the Fortran code that generates the neutron spectrum using the R-matrix framework. Also, see:
+Brune, C. R., et al. "R-matrix description of particle energy spectra produced by low-energy H 3+ H 3 reactions." Physical Review C 92.1 (2015): 014003.
